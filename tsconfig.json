@@ -22,9 +22,10 @@
 
     /* Paths */
     "paths": {
-      "#/*": ["./src/*"]
+      "#/*": ["./src/*"],
+      "#data/*": ["./public/data/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "bin"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

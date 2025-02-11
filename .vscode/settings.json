@@ -1,0 +1,40 @@
+{
+  "biome.enabled": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "quickfix.biome": "always",
+    "source.organizeImports": "never",
+    "source.organizeImports.biome": "never",
+    "source.removeUnusedImports": "explicit",
+    "source.addMissingImports.ts": "always",
+    "source.fixAll.ts": "always",
+    "source.removeUnused.ts": "never",
+    "source.sortImports": "never",
+    "source.fixAll.eslint": "always"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["(\\w+)ClassName\\s*=\\s*[\"'`]([^\"'`]*)[\"'`]", "\\2"],
+    ["classNames\\s*=\\s*\\{\\{([^}]*)\\}\\}", "[\"'`]([^\"'`]*)[\"'`]"]
+  ],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  }
+}

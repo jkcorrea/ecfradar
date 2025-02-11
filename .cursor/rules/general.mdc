@@ -1,0 +1,147 @@
+---
+description: context for all tasks
+globs: 
+---
+# ECFRadar
+
+Project: eCFR Analyzer
+
+The goal of this project is to create a simple website to analyze Federal Regulations. The eCFR is available at https://www.ecfr.gov/. There is a public api for it.
+
+Please write code to download the current eCFR and analyze it for items such as word count per agency and historical changes over time. Feel free to add your own custom metrics.
+
+There should be a front end visualization for the content where we can click around and ideally query items. Additionally, there should be a public github project with the code.
+
+# eCFR Analyzer Game Plan
+
+The goal is to quickly build a lightweight, interactive web app that lets users explore and visualize federal regulation data from the [eCFR website](mdc:https:/ecfr.gov). We'll leverage pre-generated JSON data stored under `src/data` to avoid backend complexity, focusing on speed and a rich user experience with interactive visualizations and AI features.
+
+---
+
+## 1. Data Handling
+
+- **Pre-generated Data**:  
+  - Store the full set of regulation data (text, metadata, publication dates, agencies, word counts, etc.) as JSON blobs in the `src/data` folder.
+  - Define TypeScript interfaces to enforce data structure consistency (e.g., `Regulation`, `AgencyMetrics`).
+
+- **Data Enrichment**:  
+  - Optionally include pre-generated LLM summaries with the data, or plan to generate these on-demand in the UI.
+  - Consider adding extra metrics like sentiment scores or readability indices for bonus insights.
+
+---
+
+## 2. Core UI & Routing
+
+### Pages and Routes
+- **Dashboard (`/dashboard`)**:  
+  - Overview of key metrics (total regulations, aggregated word counts, number of agencies).
+  - Dynamic and interactive charts that filter data on click.
+
+- **Regulation List (`/regulations`)**:  
+  - A searchable, sortable, and filterable table/list of regulations.
+  - Filter options: agency, date range, word count, etc.
+
+- **Regulation Detail (`/regulations/:id`)**:  
+  - Detailed view of a single regulation including full text, metadata, and interactive AI-powered summary.
+  - Displays advanced metrics like sentiment analysis and readability (as bonus).
+
+- **Bonus Route – AI Query/Chat (`/query`)**:  
+  - An interactive chat interface that lets users ask natural language questions about regulation content and receive context-driven responses from an LLM.
+
+### Routing Library
+- **Tanstack Router**:  
+  - Use for type-safe routing which ensures a scalable, maintainable structure as the application grows.
+
+---
+
+## 3. Data Visualization
+
+- **Dashboard Visualizations**:
+  - **Word Count per Agency**:  
+    - Use bar or pie charts to show the distribution of word counts across agencies.
+  - **Historical Changes**:  
+    - Line or timeline charts to display trends in regulatory updates or word counts over time.
+
+- **Interactivity**:
+  - Clicking on chart segments will filter the regulation list to display only the relevant subset (e.g., specific agency or time period).
+  - Hover tooltips and on-click details for granular insights.
+
+- **Charting Libraries**:  
+  - Consider using Chart.js, Recharts, or D3 integrated within React for seamless interactivity.
+
+---
+
+## 4. AI Integration
+
+### AI-Powered Summaries:
+- **Summarization**:
+  - Provide a "Summarize" button on the regulation detail page that triggers an LLM to generate a concise summary of the regulation text.
+  - Option for auto-summarization on page load, with cached/pre-generated summaries stored with the JSON data to reduce load times.
+
+### Bonus AI Features:
+- **Natural Language Query**:
+  - Build an interface where users can ask questions like “What are the key changes in this regulation?” and receive tailored, context-rich responses.
+- **Advanced Analytics**:
+  - Incorporate sentiment analysis and readability scoring to provide users with additional context about the regulation texts.
+
+---
+
+## 5. Additional Bonus Features
+
+- **Export Functionality**:
+  - Enable exporting of filtered or complete regulation data in CSV or JSON format.
+
+- **User Preferences & Persisted State**:
+  - Use local storage to remember user filter selections, view preferences, or recently viewed regulations.
+
+- **Comparative Views**:
+  - Allow side-by-side comparison of different regulation pages for in-depth analysis of language shifts and text changes.
+
+- **Enhanced UI/UX**:
+  - Utilize Shadcn UI components to deliver a clean, consistent design.
+  - Make use of modals, tooltips, and responsive design to improve the overall interactivity and usability.
+
+---
+
+## 6. Implementation Approach
+
+- **Speed and Simplicity**:
+  - Focus on rapid prototyping: build the MVP using just the frontend with pre-fetched JSON data.
+  - Incrementally add more features (like the AI-powered tools) as time permits.
+
+- **Technology Stack**:
+  - **Frontend**: React + TypeScript, Shadcn UI components.
+  - **Routing**: Tanstack Router for type-safe navigation.
+  - **Visualization**: Charting libraries such as Chart.js, Recharts, or D3. TanStack Table for tables.
+  - **AI/Langauge Models**: Integration with an available LLM for generating summaries and supporting natural language queries.
+
+- **Project Organization**:
+  - **Data**: Store JSON datasets under `src/data`.
+  - **Components**: Create reusable components for charts, tables, and detail views.
+  - **Routing**: Organize pages (Dashboard, Regulations, Regulation Detail, Query) clearly under a routing folder.
+
+---
+
+## 7. Summary
+
+- **Core Functionality**:
+  - Dashboard with key metrics and dynamic visualizations.
+  - Regulation list and detail pages with search, filtering, and detail views.
+  - AI-powered summarization directly within the detail page.
+
+- **Bonus Enhancements**:
+  - Natural language query interface for AI-driven insights.
+  - Export features, comparative views, sentiment analysis, and persist user preferences.
+
+- **Overall Focus**:
+  - Rapid development without a backend by leveraging pre-fetched JSON data.
+  - A modular, interactive, and scalable design that can be extended with advanced AI features over time.
+
+---
+
+**References:**
+
+- [eCFR Official Website](mdc:https:/ecfr.gov)
+- [eCFR API Docs](mdc:https:/www.ecfr.gov/developers/documentation/api/v1)
+
+This game plan sets the foundation for a fast, adaptable prototype that can evolve into a more powerful tool with additional AI and advanced analysis features as time permits.

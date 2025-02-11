@@ -42,7 +42,7 @@
       "security": {
         "noDangerouslySetInnerHtml": "off"
       },
-      "suspicious": { "noExplicitAny": "warn" },
+      "suspicious": { "noExplicitAny": "info" },
       "complexity": {
         "noStaticOnlyClass": "off"
       }

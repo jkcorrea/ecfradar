@@ -1,125 +1,178 @@
-import { useState } from 'react'
-
 import { createFileRoute } from '@tanstack/react-router'
-import { useAtom } from 'jotai'
+import { useAtomValue } from 'jotai'
 import * as Icons from 'lucide-react'
-import { nanoid } from 'nanoid'
-import { toast } from 'sonner'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
-import { Button } from '#/components/ui/button'
-import { Input } from '#/components/ui/input'
-import { parseConnectionString } from '#/lib/utils'
-import { connectionsAtom, type DbConnection } from '#/stores/projects-store'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
+import type { TitleSummary } from '#/lib/schemas'
+import { agenciesAtom, titlesSummaryAtom } from '#/stores'
 
 export const Route = createFileRoute('/')({
   component: HomePage,
 })
 
 function HomePage() {
-  const [connections, setConnections] = useAtom(connectionsAtom)
-  const [isAddingNew, setIsAddingNew] = useState(false)
-  const [connectionString, setConnectionString] = useState('')
+  const agencies = useAtomValue(agenciesAtom)
+  const titlesSummary = useAtomValue(titlesSummaryAtom)
 
-  const handleAddConnection = (connString = connectionString) => {
-    try {
-      const parsed = parseConnectionString(connString)
-      const newConnection: DbConnection = {
-        id: nanoid(),
-        name: `Database at ${parsed.host}`,
-        connectionString: connString,
-        createdAt: Date.now(),
-        ...parsed,
-      }
+  const agencyStats =
+    agencies.data?.map((agency) => ({
+      name: agency.display_name,
+      regulations: agency.cfr_references.length,
+    })) ?? []
 
-      setConnections((prev) => [...prev, newConnection])
-      setConnectionString('')
-      setIsAddingNew(false)
-    } catch (error) {
-      toast.error('Invalid connection string')
-      console.error(error)
-    }
-  }
+  // Calculate total word count and average words per title
+  const totalWordCount =
+    titlesSummary.data?.reduce(
+      (acc: number, title: TitleSummary) => acc + (title.wordCount ?? 0),
+      0,
+    ) ?? 0
+  const avgWordsPerTitle = Math.round(totalWordCount / (titlesSummary.data?.length ?? 1))
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && connectionString) {
-      handleAddConnection()
-    } else if (e.key === 'Escape') {
-      setIsAddingNew(false)
-      setConnectionString('')
-    }
-  }
-
-  // Show simplified view when no connections exist
-  if (connections.length === 0) {
-    return (
-      <div className="container mx-auto p-8">
-        <div className="max-w-2xl mx-auto text-center space-y-4">
-          <Icons.Database className="w-12 h-12 mx-auto text-muted-foreground" />
-          <h1 className="text-2xl font-bold">Connect to Your Database</h1>
-          <p className="text-muted-foreground">
-            Paste your PostgreSQL connection string to get started
-          </p>
-          <div className="flex gap-2">
-            <Input
-              value={connectionString}
-              onChange={(e) => setConnectionString(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="postgresql://user:password@localhost:5432/dbname"
-              className="flex-1"
-            />
-            <Button onClick={() => handleAddConnection()}>
-              <Icons.ArrowRight className="w-4 h-4 mr-2" />
-              Connect
-            </Button>
-          </div>
-        </div>
-      </div>
+  // Get recent revisions data (last 30 days)
+  const recentRevisions = titlesSummary.data
+    ?.flatMap((title: TitleSummary) => title.revisions ?? [])
+    .filter((rev: TitleSummary['revisions'][number]) => {
+      const revDate = new Date(rev.date)
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+      return revDate >= thirtyDaysAgo
+    })
+    .reduce(
+      (
+        acc: Record<string, { date: string; count: number; substantiveCount: number }>,
+        rev: TitleSummary['revisions'][number],
+      ) => {
+        const date = rev.date.split('T')[0] // Get just the date part
+        if (!acc[date]) {
+          acc[date] = { date, count: 0, substantiveCount: 0 }
+        }
+        acc[date].count += rev.count
+        if (rev.substantive) {
+          acc[date].substantiveCount += rev.count
+        }
+        return acc
+      },
+      {} as Record<string, { date: string; count: number; substantiveCount: number }>,
     )
-  }
+
+  type RevisionStat = { date: string; count: number; substantiveCount: number }
+  const revisionChartData = (Object.values(recentRevisions ?? {}) as RevisionStat[]).sort((a, b) =>
+    a.date.localeCompare(b.date),
+  )
 
   return (
     <div className="container mx-auto p-8">
-      <div className="space-y-4 mb-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Database Connections</h1>
-          <Button onClick={() => setIsAddingNew(!isAddingNew)}>
-            <Icons.Plus className="w-4 h-4 mr-2" />
-            Add Connection
-          </Button>
+      <h1 className="mb-8 text-4xl font-bold">Dashboard</h1>
+
+      <div className="grid gap-6">
+        {/* Overview Stats */}
+        <div className="grid gap-6 md:grid-cols-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Agencies</CardTitle>
+              <CardDescription>Number of federal agencies</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-baseline gap-2">
+              <Icons.Building2 className="h-4 w-4 text-muted-foreground" />
+              <p className="text-3xl font-bold">{agencies.data?.length ?? 0}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Regulations</CardTitle>
+              <CardDescription>Number of CFR references</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-baseline gap-2">
+              <Icons.BookOpen className="h-4 w-4 text-muted-foreground" />
+              <p className="text-3xl font-bold">
+                {agencies.data?.reduce((acc, agency) => acc + agency.cfr_references.length, 0) ?? 0}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Words</CardTitle>
+              <CardDescription>Across all regulations</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-baseline gap-2">
+              <Icons.FileText className="h-4 w-4 text-muted-foreground" />
+              <p className="text-3xl font-bold">{new Intl.NumberFormat().format(totalWordCount)}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Avg Words per Title</CardTitle>
+              <CardDescription>Average length of regulations</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-baseline gap-2">
+              <Icons.BarChart2 className="h-4 w-4 text-muted-foreground" />
+              <p className="text-3xl font-bold">
+                {new Intl.NumberFormat().format(avgWordsPerTitle)}
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
-        {isAddingNew && (
-          <div className="flex gap-2">
-            <Input
-              value={connectionString}
-              onChange={(e) => setConnectionString(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="postgresql://user:password@localhost:5432/dbname"
-              className="flex-1"
-              autoFocus
-            />
-            <Button onClick={() => handleAddConnection()}>
-              <Icons.ArrowRight className="w-4 h-4 mr-2" />
-              Connect
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {connections.map((connection) => (
-          <div
-            key={connection.id}
-            className="p-4 border rounded-lg hover:border-primary transition-colors"
-          >
-            <h3 className="font-semibold mb-2">{connection.name}</h3>
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>Host: {connection.host}</p>
-              <p>Database: {connection.database}</p>
-              <p>User: {connection.user}</p>
+        {/* Recent Changes Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Changes (Last 30 Days)</CardTitle>
+            <CardDescription>
+              Number of changes per day, including substantive changes
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={revisionChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="count" stroke="#3b82f6" name="Total Changes" />
+                  <Line
+                    type="monotone"
+                    dataKey="substantiveCount"
+                    stroke="#ef4444"
+                    name="Substantive Changes"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-          </div>
-        ))}
+          </CardContent>
+        </Card>
+
+        {/* Regulations by Agency Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Regulations by Agency</CardTitle>
+            <CardDescription>Number of CFR references per agency</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={agencyStats}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="regulations" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
