@@ -1,24 +1,31 @@
 import { atomWithQuery } from 'jotai-tanstack-query'
 
+import { getQueryClient } from '#/lib/query-client'
 import { AgencySchema, TitleSummarySchema } from '#/lib/schemas'
 
-export const agenciesAtom = atomWithQuery(() => ({
-  queryKey: ['agencies'],
-  queryFn: async () => {
-    const data = await fetchData('/data/agencies.json')
+export const agenciesAtom = atomWithQuery(
+  () => ({
+    queryKey: ['agencies'],
+    queryFn: async () => {
+      const data = await fetchData('/data/agencies.json')
 
-    return AgencySchema.array().parse(data)
-  },
-}))
+      return AgencySchema.array().parse(data)
+    },
+  }),
+  getQueryClient,
+)
 
-export const titlesSummaryAtom = atomWithQuery(() => ({
-  queryKey: ['titles-summary'],
-  queryFn: async () => {
-    const data = await fetchData('/data/summary.json')
+export const titlesSummaryAtom = atomWithQuery(
+  () => ({
+    queryKey: ['titles-summary'],
+    queryFn: async () => {
+      const data = await fetchData('/data/summary.json')
 
-    return TitleSummarySchema.array().parse(data)
-  },
-}))
+      return TitleSummarySchema.array().parse(data)
+    },
+  }),
+  getQueryClient,
+)
 
 async function fetchData<T>(path: string): Promise<T> {
   try {

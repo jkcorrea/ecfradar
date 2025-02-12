@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { useNavigate } from '@tanstack/react-router'
 import { useAtomValue } from 'jotai'
 import {
   Bar,
@@ -15,7 +16,6 @@ import {
 import type { ComboboxOption } from '#/components/combobox'
 import { Combobox } from '#/components/combobox'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '#/components/ui/dialog'
 import type { Agency, CFRReference } from '#/lib/schemas'
 import { agenciesAtom, titlesSummaryAtom } from '#/stores'
 
@@ -30,11 +30,11 @@ interface AgencyStats extends Agency {
 
 const COLORS = ['#bfdbfe', '#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
 
-export function AgenciesSummaryChart() {
+export function AgencyReferencesChart() {
   const agencies = useAtomValue(agenciesAtom)
   const titles = useAtomValue(titlesSummaryAtom)
+  const navigate = useNavigate()
   const [selectedTitles, setSelectedTitles] = React.useState<number[]>([])
-  const [selectedAgency, setSelectedAgency] = React.useState<AgencyStats | null>(null)
 
   const getColorIndex = (count: number, max: number) => {
     const ratio = count / max
@@ -56,11 +56,11 @@ export function AgenciesSummaryChart() {
 
       return {
         ...agency,
-        name: agency.display_name,
+        name: agency.short_name ?? agency.display_name,
         regulations: references.length + childRefs.length,
         references: [...references, ...childRefs],
         childStats: agency.children.map((child) => ({
-          name: child.display_name,
+          name: child.short_name ?? child.display_name,
           regulations: selectedTitles.length
             ? child.cfr_references.filter((ref) => selectedTitles.includes(ref.title)).length
             : child.cfr_references.length,
@@ -71,6 +71,7 @@ export function AgenciesSummaryChart() {
     return filteredAgencies
       .filter((a) => a.regulations > 0)
       .sort((a, b) => b.regulations - a.regulations)
+      .slice(0, 10)
   }, [agencies.data, selectedTitles])
 
   const maxRegulations = Math.max(...agencyStats.map((a) => a.regulations))
@@ -89,13 +90,13 @@ export function AgenciesSummaryChart() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
+          <div className="space-y-1.5">
             <CardTitle>Agency References</CardTitle>
-            <CardDescription>Number of CFR references per agency</CardDescription>
+            <CardDescription>CFR references by agency (top 10)</CardDescription>
           </div>
 
           <Combobox
-            placeholder="Filter by CFR titles..."
+            placeholder="Filter by title..."
             options={titleOptions}
             selected={selectedTitles}
             onChange={handleTitleChange}
@@ -103,21 +104,40 @@ export function AgenciesSummaryChart() {
           />
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-[400px] overflow-y-auto">
+      <CardContent className="p-0">
+        <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={agencyStats} margin={{ top: 5, right: 20, bottom: 20, left: 40 }}>
+            <BarChart
+              data={agencyStats}
+              margin={{ top: 5, right: 16, bottom: 50, left: 16 }}
+              barSize={24}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="name"
-                tick={false}
-                height={20}
-                label={{ value: 'Agencies', position: 'bottom' }}
+                tick={(props) => {
+                  const { x, y, payload } = props
+                  return (
+                    <g transform={`translate(${x},${y})`}>
+                      <text
+                        x={0}
+                        y={0}
+                        dy={16}
+                        textAnchor="end"
+                        transform="rotate(-45)"
+                        fontSize={11}
+                      >
+                        {payload.value.length > 20
+                          ? `${payload.value.slice(0, 20)}...`
+                          : payload.value}
+                      </text>
+                    </g>
+                  )
+                }}
+                height={50}
+                interval={0}
               />
-              <YAxis
-                width={60}
-                label={{ value: 'References', angle: -90, position: 'insideLeft' }}
-              />
+              <YAxis type="number" />
               <Tooltip
                 content={({ active, payload }) => {
                   if (!active || !payload?.length) return null
@@ -136,8 +156,9 @@ export function AgenciesSummaryChart() {
               />
               <Bar
                 dataKey="regulations"
-                onClick={(data) => setSelectedAgency(data as AgencyStats)}
+                onClick={(data) => navigate({ to: '/agency/$slug', params: { slug: data.slug } })}
                 cursor="pointer"
+                barSize={24}
               >
                 {agencyStats.map((entry) => (
                   <Cell
@@ -150,36 +171,6 @@ export function AgenciesSummaryChart() {
           </ResponsiveContainer>
         </div>
       </CardContent>
-
-      <Dialog open={!!selectedAgency} onOpenChange={() => setSelectedAgency(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedAgency?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="mt-4">
-            <h4 className="mb-2 font-semibold">Sub-agencies</h4>
-            {selectedAgency?.childStats.map((child) => (
-              <div key={child.name} className="mb-2 flex items-center justify-between">
-                <span>{child.name}</span>
-                <span className="font-mono">{child.regulations}</span>
-              </div>
-            ))}
-            <h4 className="mb-2 mt-4 font-semibold">Referenced Titles & Chapters</h4>
-            {Object.entries(
-              selectedAgency?.references.reduce((acc: Record<string, number>, ref) => {
-                const key = `Title ${ref.title}${ref.chapter ? ` Chapter ${ref.chapter}` : ''}`
-                acc[key] = (acc[key] || 0) + 1
-                return acc
-              }, {}) ?? {},
-            ).map(([ref, count]) => (
-              <div key={ref} className="mb-1 flex items-center justify-between">
-                <span>{ref}</span>
-                <span className="font-mono">{count}</span>
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
     </Card>
   )
 }

@@ -12,12 +12,19 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
+import { Route as AgencySlugImport } from './routes/agency.$slug'
 
 // Create/Update Routes
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AgencySlugRoute = AgencySlugImport.update({
+  id: '/agency/$slug',
+  path: '/agency/$slug',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -32,6 +39,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/agency/$slug': {
+      id: '/agency/$slug'
+      path: '/agency/$slug'
+      fullPath: '/agency/$slug'
+      preLoaderRoute: typeof AgencySlugImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -39,32 +53,37 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agency/$slug': typeof AgencySlugRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agency/$slug': typeof AgencySlugRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/agency/$slug': typeof AgencySlugRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/agency/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/agency/$slug'
+  id: '__root__' | '/' | '/agency/$slug'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgencySlugRoute: typeof AgencySlugRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgencySlugRoute: AgencySlugRoute,
 }
 
 export const routeTree = rootRoute
@@ -77,11 +96,15 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/"
+        "/",
+        "/agency/$slug"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/agency/$slug": {
+      "filePath": "agency.$slug.tsx"
     }
   }
 }
