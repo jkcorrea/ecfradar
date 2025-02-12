@@ -20,3 +20,13 @@ export function parseConnectionString(connectionString: string) {
     throw new Error('Invalid connection string format')
   }
 }
+
+export const ecfrLink = (title: number, chapter?: string, subchapter?: number) => {
+  const base = `https://www.ecfr.gov/current/title-${title.toString()}`
+  if (!chapter) return base
+
+  const withChapter = `${base}/chapter-${chapter.toString()}`
+  if (!subchapter) return withChapter
+
+  return `${withChapter}/subchapter-${subchapter.toString()}`
+}

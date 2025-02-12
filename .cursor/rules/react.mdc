@@ -2,6 +2,7 @@
 description: 
 globs: *.tsx, *.ts
 ---
+- we use bun for package management and scripting
 - we are using tanstack router for routing. put routes under `src/routes` and follow tanstack router file routing conventions.
 - import from src via `#/`. do not use `@/`.
 - always import react as `import React from 'react'`, use hooks via `React.useHook`

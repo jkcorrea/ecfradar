@@ -11,10 +11,24 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as TitlesImport } from './routes/titles'
+import { Route as AgenciesImport } from './routes/agencies'
 import { Route as IndexImport } from './routes/index'
 import { Route as AgencySlugImport } from './routes/agency.$slug'
 
 // Create/Update Routes
+
+const TitlesRoute = TitlesImport.update({
+  id: '/titles',
+  path: '/titles',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AgenciesRoute = AgenciesImport.update({
+  id: '/agencies',
+  path: '/agencies',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -39,6 +53,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/agencies': {
+      id: '/agencies'
+      path: '/agencies'
+      fullPath: '/agencies'
+      preLoaderRoute: typeof AgenciesImport
+      parentRoute: typeof rootRoute
+    }
+    '/titles': {
+      id: '/titles'
+      path: '/titles'
+      fullPath: '/titles'
+      preLoaderRoute: typeof TitlesImport
+      parentRoute: typeof rootRoute
+    }
     '/agency/$slug': {
       id: '/agency/$slug'
       path: '/agency/$slug'
@@ -53,36 +81,46 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agencies': typeof AgenciesRoute
+  '/titles': typeof TitlesRoute
   '/agency/$slug': typeof AgencySlugRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agencies': typeof AgenciesRoute
+  '/titles': typeof TitlesRoute
   '/agency/$slug': typeof AgencySlugRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/agencies': typeof AgenciesRoute
+  '/titles': typeof TitlesRoute
   '/agency/$slug': typeof AgencySlugRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agency/$slug'
+  fullPaths: '/' | '/agencies' | '/titles' | '/agency/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agency/$slug'
-  id: '__root__' | '/' | '/agency/$slug'
+  to: '/' | '/agencies' | '/titles' | '/agency/$slug'
+  id: '__root__' | '/' | '/agencies' | '/titles' | '/agency/$slug'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgenciesRoute: typeof AgenciesRoute
+  TitlesRoute: typeof TitlesRoute
   AgencySlugRoute: typeof AgencySlugRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgenciesRoute: AgenciesRoute,
+  TitlesRoute: TitlesRoute,
   AgencySlugRoute: AgencySlugRoute,
 }
 
@@ -97,11 +135,19 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/agencies",
+        "/titles",
         "/agency/$slug"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/agencies": {
+      "filePath": "agencies.tsx"
+    },
+    "/titles": {
+      "filePath": "titles.tsx"
     },
     "/agency/$slug": {
       "filePath": "agency.$slug.tsx"

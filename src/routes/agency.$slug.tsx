@@ -15,6 +15,7 @@ import { z } from 'zod'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#/components/ui/card'
 import type { CFRReference } from '#/lib/schemas'
+import { ecfrLink } from '#/lib/utils'
 import { agenciesAtom, titlesSummaryAtom } from '#/stores'
 
 export const Route = createFileRoute('/agency/$slug')({
@@ -46,19 +47,22 @@ function AgencyDetailPage() {
     return refs
   }, [agency])
 
-  // Group references by title and chapter
+  // Group references by title
   const referencesByTitle = React.useMemo(() => {
-    const grouped = {} as Record<string, { count: number; title: number; chapter?: number }>
+    const grouped = {} as Record<string, { count: number; title: number; chapters: string[] }>
     for (const ref of allReferences) {
-      const key = `Title ${ref.title}${ref.chapter ? ` Chapter ${ref.chapter}` : ''}`
+      const key = `Title ${ref.title}`
       if (!grouped[key]) {
         grouped[key] = {
           count: 0,
           title: ref.title,
-          chapter: ref.chapter ? Number.parseInt(ref.chapter) : undefined,
+          chapters: [],
         }
       }
       grouped[key].count++
+      if (ref.chapter && !grouped[key].chapters.includes(ref.chapter)) {
+        grouped[key].chapters.push(ref.chapter)
+      }
     }
     return grouped
   }, [allReferences])
@@ -99,35 +103,39 @@ function AgencyDetailPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Sub-agencies */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sub-agencies</CardTitle>
-            <CardDescription>Breakdown of references by sub-agency</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {agency.children.map((child) => (
-                <div
-                  key={child.slug}
-                  className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-muted/50"
-                >
-                  <span className="text-sm">
-                    {child.display_name.replace(/, Department of .*$/, '')}
-                  </span>
-                  <span className="font-mono text-sm tabular-nums text-muted-foreground">
-                    {child.cfr_references.length.toLocaleString()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {agency.children.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Sub-agencies</CardTitle>
+              <CardDescription>Breakdown of references by sub-agency</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {agency.children
+                  .sort((a, b) => b.cfr_references.length - a.cfr_references.length)
+                  .map((child) => (
+                    <div
+                      key={child.slug}
+                      className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-muted/50"
+                    >
+                      <span className="text-sm">
+                        {child.display_name.replace(/, Department of .*$/, '')}
+                      </span>
+                      <span className="font-mono text-sm tabular-nums text-muted-foreground">
+                        {child.cfr_references.length.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Referenced Titles */}
         <Card>
           <CardHeader>
-            <CardTitle>Referenced Titles & Chapters</CardTitle>
-            <CardDescription>Breakdown of references by CFR title and chapter</CardDescription>
+            <CardTitle>Referenced Titles</CardTitle>
+            <CardDescription>Breakdown of references by CFR title</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="max-h-[300px] space-y-2 overflow-y-auto pr-2">
@@ -138,7 +146,22 @@ function AgencyDetailPage() {
                     key={key}
                     className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-muted/50"
                   >
-                    <span className="text-sm">{key}</span>
+                    <div className="flex flex-col gap-1">
+                      <a
+                        href={ecfrLink(data.title)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-sm hover:underline"
+                      >
+                        <span>{key}</span>
+                        <Icons.ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                      {data.chapters.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          Chapters: {data.chapters.sort().join(', ')}
+                        </div>
+                      )}
+                    </div>
                     <span className="font-mono text-sm tabular-nums text-muted-foreground">
                       {data.count.toLocaleString()}
                     </span>
