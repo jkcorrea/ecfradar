@@ -12,7 +12,7 @@ import {
   TitleVersionSchema,
 } from '#/lib/schemas'
 
-const dataDir = path.join(__dirname, '..', 'public', 'data', 'latest')
+const dataDir = path.join(import.meta.dir, '..', 'public', 'data', 'latest')
 
 const VersionsResponseSchema = z.object({
   content_versions: z.array(TitleVersionSchema),

@@ -5,7 +5,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 
 import type { TitleMetadata, TitleSummary, TitleVersion } from '#/lib/schemas'
 
-const dataDir = path.join(__dirname, '..', 'public', 'data')
+const dataDir = path.join(import.meta.dir, '..', 'public', 'data')
 
 const aiSummaryFlag = process.argv.includes('--ai') || process.argv.includes('-A')
 

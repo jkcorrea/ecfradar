@@ -5,7 +5,7 @@ import { XMLParser } from 'fast-xml-parser'
 
 import { xml2Md } from './xml2md'
 
-const outputDir = path.join(__dirname, '..', 'public', 'data', 'latest')
+const outputDir = path.join(import.meta.dir, '..', 'public', 'data', 'latest')
 
 async function processTitle(filePath: string) {
   const xml = await readFile(filePath, 'utf-8')

@@ -1,6 +1,7 @@
 import * as Icons from 'lucide-react'
 
 import { AppLink } from '#/components/app-link'
+
 export function DefaultNotFound() {
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center pb-12">
