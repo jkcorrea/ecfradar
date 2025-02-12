@@ -1,7 +1,6 @@
 import React from 'react'
 
 import { compareItems, rankItem } from '@tanstack/match-sorter-utils'
-import { useAtomValue } from 'jotai'
 import * as Icons from 'lucide-react'
 
 import { Button } from '#/components/ui/button'
@@ -17,7 +16,6 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover'
 import { cn } from '#/lib/utils'
 
-import { isInDialogAtom } from './ui/dialog'
 import { Skeleton } from './ui/skeleton'
 
 export interface ComboboxOption<T extends string | number> {
@@ -119,10 +117,8 @@ export function Combobox<T extends string | number, TActions extends ComboboxAct
     listContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' })
   }
 
-  const isInDialog = useAtomValue(isInDialogAtom)
-
   return (
-    <Popover open={open} onOpenChange={setOpen} modal={isInDialog}>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
