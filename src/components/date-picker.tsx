@@ -4,6 +4,7 @@ import { SelectValue } from '@radix-ui/react-select'
 import { capitalCase } from 'change-case'
 import {
   addDays,
+  endOfMonth,
   format,
   isDate,
   startOfMonth,
@@ -176,5 +177,17 @@ const RangePresets = {
   last_90_days: () => ({
     from: subDays(new Date(), 90),
     to: new Date(),
+  }),
+  last_year: () => ({
+    from: startOfYear(subYears(new Date(), 1)),
+    to: endOfMonth(new Date()),
+  }),
+  last_5_years: () => ({
+    from: startOfYear(subYears(new Date(), 5)),
+    to: endOfMonth(new Date()),
+  }),
+  all_time: () => ({
+    from: startOfYear(new Date(0)),
+    to: endOfMonth(new Date()),
   }),
 } as const satisfies Record<string, () => DateRange>
