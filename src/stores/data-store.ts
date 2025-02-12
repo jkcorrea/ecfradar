@@ -1,14 +1,13 @@
 import { atomWithQuery } from 'jotai-tanstack-query'
 
-import { fetchCompressedJson, isCompressionSupported } from '#/lib/compression'
-import { AgenciesSchema, TitleSummarySchema } from '#/lib/schemas'
+import { AgencySchema, TitleSummarySchema } from '#/lib/schemas'
 
 export const agenciesAtom = atomWithQuery(() => ({
   queryKey: ['agencies'],
   queryFn: async () => {
     const data = await fetchData('/data/agencies.json')
 
-    return AgenciesSchema.parse(data).agencies
+    return AgencySchema.array().parse(data)
   },
 }))
 
@@ -24,7 +23,7 @@ export const titlesSummaryAtom = atomWithQuery(() => ({
 async function fetchData<T>(path: string): Promise<T> {
   try {
     // Try to fetch compressed version if supported
-    if (isCompressionSupported()) {
+    if (import.meta.env.PROD) {
       return await fetchCompressedJson<T>(`${path}.gz`)
     }
   } catch (error) {
@@ -34,4 +33,22 @@ async function fetchData<T>(path: string): Promise<T> {
   // Fallback to uncompressed
   const response = await fetch(path)
   return response.json()
+}
+
+/**
+ * Fetches and decompresses a gzipped JSON file
+ * @param url URL of the compressed file
+ * @returns Decompressed JSON data
+ */
+async function fetchCompressedJson<T>(url: string): Promise<T> {
+  const response = await fetch(url)
+  const blob = await response.blob()
+
+  // Create a DecompressionStream for gzip
+  const ds = new DecompressionStream('gzip')
+  const decompressedStream = blob.stream().pipeThrough(ds)
+  const decompressedBlob = await new Response(decompressedStream).blob()
+  const text = await decompressedBlob.text()
+
+  return JSON.parse(text)
 }

@@ -2,20 +2,20 @@ import { z } from 'zod'
 
 const CFRReferenceSchema = z.object({
   title: z.number(),
-  chapter: z.string(),
+  chapter: z.string().nullish(),
 })
 export type CFRReference = z.infer<typeof CFRReferenceSchema>
 
 const AgencyNodeSchema = z.object({
   name: z.string(),
-  short_name: z.string(),
+  short_name: z.string().nullish(),
   display_name: z.string(),
   sortable_name: z.string(),
   slug: z.string(),
   cfr_references: z.array(CFRReferenceSchema),
 })
 export type AgencyNode = z.infer<typeof AgencyNodeSchema>
-const AgencySchema = AgencyNodeSchema.extend({
+export const AgencySchema = AgencyNodeSchema.extend({
   children: z.array(AgencyNodeSchema),
 })
 export type Agency = z.infer<typeof AgencySchema>
