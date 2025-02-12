@@ -19,7 +19,7 @@ import { titlesSummaryAtom } from '#/stores'
 
 type GroupBy = 'year' | 'month'
 
-export function RecentChangesChart() {
+export function ChangesOverTimeChart() {
   const titlesSummary = useAtomValue(titlesSummaryAtom)
   const [groupBy, setGroupBy] = React.useState<GroupBy>('year')
 

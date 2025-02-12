@@ -5,7 +5,6 @@ import { useHotkeys } from 'react-hotkeys-hook'
 
 import { devModeAtom } from '#/stores'
 
-import { SidebarProvider } from './ui/sidebar'
 import { Toaster } from './ui/sonner'
 import { TooltipProvider } from './ui/tooltip'
 
@@ -36,7 +35,7 @@ export const UIProvider = ({ children }: { children: React.ReactNode }) => {
         </React.Suspense>
       )}
 
-      <SidebarProvider>{children}</SidebarProvider>
+      {children}
       <Toaster />
     </TooltipProvider>
   )

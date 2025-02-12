@@ -30,7 +30,7 @@ interface AgencyStats extends Agency {
 
 const COLORS = ['#bfdbfe', '#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
 
-export function TopAgenciesChart() {
+export function AgenciesSummaryChart() {
   const agencies = useAtomValue(agenciesAtom)
   const titles = useAtomValue(titlesSummaryAtom)
   const [selectedTitles, setSelectedTitles] = React.useState<number[]>([])
